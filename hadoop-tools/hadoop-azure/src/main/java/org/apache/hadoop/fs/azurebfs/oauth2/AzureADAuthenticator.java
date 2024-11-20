@@ -173,7 +173,7 @@ public final class AzureADAuthenticator {
       final String tenantGuid, final String clientId, String authority,
       boolean bypassCache) throws IOException {
     QueryParams qp = new QueryParams();
-    qp.add("api-version", "2018-02-01");
+    qp.add("api-version", MUST BE DYNAMIC, "2018-02-01" is not supported by Azure ARC - on-prem VM associated with Azure eco-system);
     qp.add("resource", RESOURCE_NAME);
 
     if (tenantGuid != null && tenantGuid.length() > 0) {

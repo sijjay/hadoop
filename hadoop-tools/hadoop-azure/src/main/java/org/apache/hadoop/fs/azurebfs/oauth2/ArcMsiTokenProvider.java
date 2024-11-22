@@ -30,6 +30,8 @@ public class ArcMsiTokenProvider extends AccessTokenProvider {
 
   private final String authEndpoint;
 
+  private final String apiVersion;
+
   private final String authority;
 
   private final String tenantGuid;
@@ -42,19 +44,20 @@ public class ArcMsiTokenProvider extends AccessTokenProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTokenProvider.class);
 
-  public ArcMsiTokenProvider(final String authEndpoint, final String tenantGuid,
+  public ArcMsiTokenProvider(final String authEndpoint, final String apiVersion, final String tenantGuid,
                              final String clientId, final String authority) {
     this.authEndpoint = authEndpoint;
     this.tenantGuid = tenantGuid;
     this.clientId = clientId;
     this.authority = authority;
+    this.apiVersion = apiVersion;
   }
 
   @Override
   protected AzureADToken refreshToken() throws IOException {
     LOG.debug("AADToken: refreshing token from ARC MSI");
     AzureADToken token = AzureADAuthenticator
-        .getTokenFromArcMsi(authEndpoint, tenantGuid, clientId, authority, false);
+        .getTokenFromArcMsi(authEndpoint, apiVersion, tenantGuid, clientId, authority, false);
     tokenFetchTime = System.currentTimeMillis();
     return token;
   }

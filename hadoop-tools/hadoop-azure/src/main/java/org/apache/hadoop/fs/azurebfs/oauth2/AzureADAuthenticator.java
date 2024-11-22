@@ -171,11 +171,11 @@ public final class AzureADAuthenticator {
    * @return {@link AzureADToken} obtained using the creds
    * @throws IOException throws IOException if there is a failure in obtaining the token
    */
-  public static AzureADToken getTokenFromMsi(final String authEndpoint,
+  public static AzureADToken getTokenFromMsi(final String authEndpoint, final String apiVersion,
       final String tenantGuid, final String clientId, String authority,
       boolean bypassCache) throws IOException {
     QueryParams qp = new QueryParams();
-    qp.add("api-version", "2018-02-01");
+    qp.add("api-version", apiVersion);
     qp.add("resource", RESOURCE_NAME);
 
     if (tenantGuid != null && tenantGuid.length() > 0) {
@@ -215,11 +215,11 @@ public final class AzureADAuthenticator {
    * @return {@link AzureADToken} obtained using the creds
    * @throws IOException throws IOException if there is a failure in obtaining the token
    */
-  public static AzureADToken getTokenFromArcMsi(final String authEndpoint,
+  public static AzureADToken getTokenFromArcMsi(final String authEndpoint, final String apiVersion,
        final String tenantGuid, final String clientId, String authority,
        boolean bypassCache) throws IOException {
     QueryParams qp = new QueryParams();
-    qp.add("api-version", "2018-02-01");
+    qp.add("api-version", apiVersion);
     qp.add("resource", RESOURCE_NAME);
 
     if (tenantGuid != null && tenantGuid.length() > 0) {
@@ -445,10 +445,10 @@ public final class AzureADAuthenticator {
     }
 
     if (isArc) {
-      // Currently there is a known flow that ARC needs get challenger token first
+      // Currently there is a known flow that ARC needs obtain a challenge token first
       // before and in order to get access_token from the same MSI endpoint
       try{
-        LOG.debug("Requesting an challenger token by {} to {}",
+        LOG.debug("Requesting a challenge token by {} to {}",
                 httpMethod, authEndpoint);
         URL url = new URL(urlString);
         conn = (HttpURLConnection) url.openConnection();
@@ -471,6 +471,18 @@ public final class AzureADAuthenticator {
         AbfsIoUtils.dumpHeadersToDebugLog("Response Headers",
                 conn.getHeaderFields());
 
+        int httpResponseCode = conn.getResponseCode();
+        String requestId = conn.getHeaderField("x-ms-request-id");
+        String responseContentType = conn.getHeaderField("Content-Type");
+        String operation = "Challenge Token: HTTP connection to " + authEndpoint
+                + " failed for getting challenge token from ARC MSI endpoint.";
+        InputStream stream = conn.getErrorStream();
+        if (stream == null) {
+          // no error stream, try the original input stream
+          stream = conn.getInputStream();
+        }
+        String responseBody = consumeInputStream(stream, 1024);
+
         String authHeader = conn.getHeaderField("Www-Authenticate");
         if (authHeader != null) {
           // Extract the challenge token path
@@ -481,9 +493,14 @@ public final class AzureADAuthenticator {
               challengerToken = reader.readLine().trim();
             }
           }
+        } else {
+          throw new HttpException(httpResponseCode,
+            requestId,
+            operation,
+            authEndpoint,
+            responseContentType,
+            responseBody);
         }
-
-
       } finally {
         if (conn != null) {
           conn.disconnect();

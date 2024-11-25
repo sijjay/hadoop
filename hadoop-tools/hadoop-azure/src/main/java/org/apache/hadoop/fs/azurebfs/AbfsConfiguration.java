@@ -963,8 +963,8 @@ public class AbfsConfiguration{
               FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT,
               AuthConfigurations.DEFAULT_FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT);
           String apiVersion = getTrimmedPasswordString(
-                  FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT_API_VERSION,
-                  AuthConfigurations.DEFAULT_FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT_API_VERSION);
+              FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT_API_VERSION,
+              AuthConfigurations.DEFAULT_FS_AZURE_ACCOUNT_OAUTH_MSI_ENDPOINT_API_VERSION);
           String tenantGuid =
               getPasswordString(FS_AZURE_ACCOUNT_OAUTH_MSI_TENANT);
           String clientId =
